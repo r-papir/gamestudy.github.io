@@ -10,7 +10,7 @@
             padding: 20px;
             font-family: 'Trebuchet MS', monospace;
             background-color: #ffffff;
-            color: #DCDCDC;
+            color: #000000;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -38,8 +38,8 @@
         .ripple {
             position: absolute;
             border-radius: 50%;
-            border: 3px solid #4CAF50;
-            opacity: 0;
+            border: 5px solid #4CAF50;
+            opacity: 2;
         }
 
         @keyframes ripple {
@@ -234,14 +234,19 @@
             if (x < 0 || x >= 6 || y < 0 || y >= 6) return false;
             // Cannot move onto corner blocks
             if (isCornerBlock(x, y)) return false;
+            // Cannot move onto center block
+            if (x === gameState.centerPos.x && y === gameState.centerPos.y) return false;
             return true;
         }
 
         // Check win condition
         function checkWinCondition() {
-            // Must be on center position
-            if (gameState.avatarPos.x !== gameState.centerPos.x ||
-                gameState.avatarPos.y !== gameState.centerPos.y) {
+            // Must be adjacent to center position (not on it)
+            const dx = Math.abs(gameState.avatarPos.x - gameState.centerPos.x);
+            const dy = Math.abs(gameState.avatarPos.y - gameState.centerPos.y);
+            const isAdjacent = (dx === 1 && dy === 0) || (dx === 0 && dy === 1);
+
+            if (!isAdjacent) {
                 return false;
             }
 
@@ -296,22 +301,17 @@
                 gameState.colorHistory.push(adjacentColor);
             }
 
-            // Check if on center position
-            const colorAt = getColorAtPosition(newX, newY);
-
             renderGrid();
 
-            // Check win condition when on center
-            if (colorAt === 'center') {
-                if (checkWinCondition()) {
-                    // Create ripple effect
-                    createRipple();
+            // Check win condition after every move
+            if (checkWinCondition()) {
+                // Create ripple effect
+                createRipple();
 
-                    setTimeout(() => {
-                        currentLevelIndex++;
-                        loadLevel(currentLevelIndex);
-                    }, 1200);
-                }
+                setTimeout(() => {
+                    currentLevelIndex++;
+                    loadLevel(currentLevelIndex);
+                }, 1200);
             }
         }
 
