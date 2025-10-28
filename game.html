@@ -364,9 +364,9 @@
             }
         });
 
-        // Level data
-        levels = [
-            {
+        // Level functions
+        function level1() {
+            return {
                 id: 1,
                 name: "Tutorial",
                 grid: [
@@ -379,8 +379,11 @@
                 ],
                 avatar: { x: 2, y: 1 },
                 center: { x: 3, y: 3 }
-            },
-            {
+            };
+        }
+
+        function level2() {
+            return {
                 id: 2,
                 name: "The Path",
                 grid: [
@@ -393,8 +396,11 @@
                 ],
                 avatar: { x: 2, y: 1 },
                 center: { x: 2, y: 3 }
-            },
-            {
+            };
+        }
+
+        function level3() {
+            return {
                 id: 3,
                 name: "Careful Navigation",
                 grid: [
@@ -407,7 +413,14 @@
                 ],
                 avatar: { x: 2, y: 1 },
                 center: { x: 3, y: 2 }
-            }
+            };
+        }
+
+        // Build levels array
+        levels = [
+            level1(),
+            level2(),
+            level3()
         ];
 
         // Start game
