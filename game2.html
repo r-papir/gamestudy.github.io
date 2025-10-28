@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Shift</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            text-align: center;
+        }
+
+        #instructions {
+            font-size: 14px;
+            margin-bottom: 30px;
+            color: #888;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        #grid {
+            display: inline-grid;
+            grid-template-columns: repeat(7, 40px);
+            grid-template-rows: repeat(7, 40px);
+            gap: 2px;
+            background: #000;
+            padding: 2px;
+            border: 1px solid #333;
+            position: relative;
+        }
+
+        .pixel {
+            width: 40px;
+            height: 40px;
+            background: #0a0a0a;
+            transition: background-color 0.15s ease;
+            position: relative;
+        }
+
+        .pixel.active {
+            animation: pulse 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        #grid.level-transition {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="instructions">There are no instructions for this game, intentionally. Using the arrow keys, play the game to discover controls, rules, and the objective.</div>
+        <div id="grid"></div>
+    </div>
+
+    <script>
+        // Level color configuration
+        const levelColors = {
+            level1: '#3b82f6',  // blue
+            level2: '#fbbf24',  // yellow
+            level3: '#ef4444',  // red
+            level4: '#10b981'   // green
+        };
+
+        // Game state
+        let gameState = {
+            currentLevel: 1,
+            overlayOffset: { x: 0, y: 0 },
+            targetPattern: [],
+            overlayPattern: [],
+            gridSize: 7,
+            animating: false
+        };
+
+        // Data logging
+        let logData = [];
+        let sessionStart = new Date().toISOString();
+
+        // Level 1: Plus sign (+), horizontal movement (U = left, J = right)
+        function level1() {
+            return {
+                id: 1,
+                color: levelColors.level1,
+                movementType: 'horizontal',
+                targetPattern: [
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0]
+                ],
+                initialOffset: { x: 2, y: 0 }  // Start offset 2 pixels to the right
+            };
+        }
+
+        // Level 2: Semi-circle, diagonal movement (U = up-left, J = down-right)
+        function level2() {
+            return {
+                id: 2,
+                color: levelColors.level2,
+                movementType: 'diagonal1',
+                targetPattern: [
+                    [0, 0, 1, 1, 1, 0, 0],
+                    [0, 1, 1, 1, 1, 1, 0],
+                    [1, 1, 1, 0, 1, 1, 1],
+                    [1, 1, 0, 0, 0, 1, 1],
+                    [1, 1, 0, 0, 0, 1, 1],
+                    [1, 1, 0, 0, 0, 1, 1],
+                    [0, 0, 0, 0, 0, 0, 0]
+                ],
+                initialOffset: { x: -1, y: -1 }  // Start offset diagonally
+            };
+        }
+
+        // Level 3: Heart, vertical movement (U = up, J = down)
+        function level3() {
+            return {
+                id: 3,
+                color: levelColors.level3,
+                movementType: 'vertical',
+                targetPattern: [
+                    [0, 1, 1, 0, 1, 1, 0],
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [0, 1, 1, 1, 1, 1, 0],
+                    [0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0]
+                ],
+                initialOffset: { x: 0, y: -2 }  // Start offset 2 pixels up
+            };
+        }
+
+        // Level 4: Star (placeholder - you can modify this later)
+        function level4() {
+            return {
+                id: 4,
+                color: levelColors.level4,
+                movementType: 'diagonal2',
+                targetPattern: [
+                    [0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 0],
+                    [1, 1, 1, 1, 1, 1, 1],
+                    [0, 1, 1, 1, 1, 1, 0],
+                    [0, 1, 1, 0, 1, 1, 0],
+                    [1, 1, 0, 0, 0, 1, 1]
+                ],
+                initialOffset: { x: 1, y: -1 }  // Start offset diagonally opposite
+            };
+        }
+
+        // Get level data
+        function getLevelData(levelNum) {
+            switch(levelNum) {
+                case 1: return level1();
+                case 2: return level2();
+                case 3: return level3();
+                case 4: return level4();
+                default: return null;
+            }
+        }
+
+        // Initialize grid display
+        function initGrid() {
+            const gridElement = document.getElementById('grid');
+            gridElement.innerHTML = '';
+
+            for (let i = 0; i < gameState.gridSize * gameState.gridSize; i++) {
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel';
+                pixel.dataset.index = i;
+                gridElement.appendChild(pixel);
+            }
+        }
+
+        // Render the current state
+        function render() {
+            const pixels = document.querySelectorAll('.pixel');
+            const levelData = getLevelData(gameState.currentLevel);
+
+            pixels.forEach((pixel, index) => {
+                const x = index % gameState.gridSize;
+                const y = Math.floor(index / gameState.gridSize);
+
+                // Calculate overlay position
+                const overlayX = x - gameState.overlayOffset.x;
+                const overlayY = y - gameState.overlayOffset.y;
+
+                // Check if overlay pixel should be shown
+                let isOverlayActive = false;
+                if (overlayX >= 0 && overlayX < gameState.gridSize &&
+                    overlayY >= 0 && overlayY < gameState.gridSize) {
+                    isOverlayActive = levelData.targetPattern[overlayY][overlayX] === 1;
+                }
+
+                if (isOverlayActive) {
+                    pixel.style.backgroundColor = levelData.color;
+                } else {
+                    pixel.style.backgroundColor = '#0a0a0a';
+                }
+            });
+        }
+
+        // Check if overlay matches target (i.e., offset is 0,0)
+        function checkWin() {
+            return gameState.overlayOffset.x === 0 && gameState.overlayOffset.y === 0;
+        }
+
+        // Move overlay based on key and level's movement type
+        function moveOverlay(key) {
+            if (gameState.animating) return;
+
+            const levelData = getLevelData(gameState.currentLevel);
+            let dx = 0, dy = 0;
+            let direction = '';
+
+            switch(levelData.movementType) {
+                case 'horizontal':
+                    if (key === 'u') { dx = -1; direction = 'left'; }
+                    if (key === 'j') { dx = 1; direction = 'right'; }
+                    break;
+                case 'vertical':
+                    if (key === 'u') { dy = -1; direction = 'up'; }
+                    if (key === 'j') { dy = 1; direction = 'down'; }
+                    break;
+                case 'diagonal1':
+                    if (key === 'u') { dx = -1; dy = -1; direction = 'diagonal-up-left'; }
+                    if (key === 'j') { dx = 1; dy = 1; direction = 'diagonal-down-right'; }
+                    break;
+                case 'diagonal2':
+                    if (key === 'u') { dx = 1; dy = -1; direction = 'diagonal-up-right'; }
+                    if (key === 'j') { dx = -1; dy = 1; direction = 'diagonal-down-left'; }
+                    break;
+            }
+
+            if (dx === 0 && dy === 0) return;
+
+            // Log the movement
+            logMovement(key, direction, dx, dy);
+
+            // Animate
+            gameState.animating = true;
+            gameState.overlayOffset.x += dx;
+            gameState.overlayOffset.y += dy;
+
+            render();
+
+            setTimeout(() => {
+                gameState.animating = false;
+
+                // Check win condition
+                if (checkWin()) {
+                    advanceLevel();
+                }
+            }, 150);
+        }
+
+        // Advance to next level
+        function advanceLevel() {
+            setTimeout(() => {
+                gameState.currentLevel++;
+
+                const nextLevel = getLevelData(gameState.currentLevel);
+                if (nextLevel) {
+                    gameState.overlayOffset = { ...nextLevel.initialOffset };
+                    const gridElement = document.getElementById('grid');
+                    gridElement.classList.add('level-transition');
+                    setTimeout(() => gridElement.classList.remove('level-transition'), 500);
+                    render();
+                } else {
+                    // Game complete - just stay on last level
+                    gameState.currentLevel--;
+                }
+            }, 300);
+        }
+
+        // Log movement data
+        function logMovement(key, direction, dx, dy) {
+            const movementData = {
+                timestamp: new Date().toISOString(),
+                sessionStart: sessionStart,
+                level: gameState.currentLevel,
+                eventType: 'keypress',
+                key: key,
+                direction: direction,
+                overlayPositionBefore: {
+                    x: gameState.overlayOffset.x,
+                    y: gameState.overlayOffset.y
+                },
+                overlayPositionAfter: {
+                    x: gameState.overlayOffset.x + dx,
+                    y: gameState.overlayOffset.y + dy
+                },
+                delta: { dx, dy }
+            };
+            logData.push(movementData);
+        }
+
+        // Save log data as JSON file
+        function saveLogData() {
+            const dataStr = JSON.stringify(logData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `pixel-shift-log-${new Date().toISOString()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Alternative: Send log data to server
+        function sendLogData(serverUrl) {
+            fetch(serverUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sessionStart: sessionStart,
+                    sessionEnd: new Date().toISOString(),
+                    movements: logData
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('Log data sent successfully:', data))
+            .catch(error => console.error('Error sending log data:', error));
+        }
+
+        // Keyboard event handler
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+
+            if (key === 'u' || key === 'j') {
+                e.preventDefault();
+                moveOverlay(key);
+            }
+
+            // Secret key to save log data: press 's'
+            if (key === 's') {
+                saveLogData();
+            }
+        });
+
+        // Initialize game
+        function initGame() {
+            const firstLevel = getLevelData(1);
+            gameState.overlayOffset = { ...firstLevel.initialOffset };
+            initGrid();
+            render();
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
