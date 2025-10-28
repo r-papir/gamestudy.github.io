@@ -71,6 +71,7 @@
             margin-left: auto;
             margin-right: auto;
             line-height: 1.5;
+            text-align: center;
             opacity: 1;
             transition: opacity 0.5s ease-in-out;
         }
@@ -358,7 +359,13 @@
 
                 setTimeout(() => {
                     currentLevelIndex++;
-                    loadLevel(currentLevelIndex);
+                    if (currentLevelIndex < levels.length) {
+                        loadLevel(currentLevelIndex);
+                    } else {
+                        // Game complete - fade back in to show final state
+                        gridElement.classList.remove('fade-out');
+                        instructionsElement.classList.remove('fade-out');
+                    }
                 }, 800);
             }
         }
