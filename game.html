@@ -227,7 +227,7 @@
             // Update instructions display
             const instructionsElement = document.getElementById('instructions');
             if (level.instructions) {
-                instructionsElement.textContent = level.instructions;
+                instructionsElement.innerHTML = level.instructions;
                 instructionsElement.style.display = 'block';
             } else {
                 instructionsElement.style.display = 'none';
