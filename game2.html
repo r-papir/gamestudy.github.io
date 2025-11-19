@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
+            font-family: 'Trebuchet MS', monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -41,10 +41,12 @@
         #grid {
             display: grid;
             gap: 2px;
-            background: #333;
+            background: #e0e0e0;
             padding: 2px;
-            border: 3px solid #555;
+            border: 3px solid #e0e0e0;
             position: relative;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
         }
 
         .cell {
@@ -180,6 +182,9 @@
                 spawnDockCells: [{x: 0, y: 6}, {x: 0, y: 7}, {x: 1, y: 7}],
                 spawnTriggerCell: {x: 1, y: 6},
                 spawnAdjacencyRequirement: 2,
+                spawnRemoverDockCells: [{x: 7, y: 6}, {x: 7, y: 7}, {x: 6, y: 7}],
+                spawnRemoverTriggerCell: {x: 6, y: 6},
+                spawnRemoverAdjacencyRequirement: 2,
                 hintTemplateCells: [
                     {x: 2, y: 2, color: "purple"},
                     {x: 3, y: 2, color: "purple"},
@@ -217,6 +222,9 @@
                 spawnDockCells: [{x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 0}],
                 spawnTriggerCell: {x: 1, y: 1},
                 spawnAdjacencyRequirement: 2,
+                spawnRemoverDockCells: [{x: 7, y: 6}, {x: 7, y: 7}, {x: 6, y: 7}],
+                spawnRemoverTriggerCell: {x: 6, y: 6},
+                spawnRemoverAdjacencyRequirement: 2,
                 hintTemplateCells: [
                     {x: 6, y: 6, color: "cyan"},
                     {x: 6, y: 7, color: "cyan"},
@@ -246,6 +254,9 @@
                 spawnDockCells: [{x: 7, y: 0}, {x: 7, y: 1}, {x: 6, y: 0}],
                 spawnTriggerCell: {x: 6, y: 1},
                 spawnAdjacencyRequirement: 2,
+                spawnRemoverDockCells: [{x: 0, y: 6}, {x: 0, y: 7}, {x: 1, y: 7}],
+                spawnRemoverTriggerCell: {x: 1, y: 6},
+                spawnRemoverAdjacencyRequirement: 2,
                 hintTemplateCells: [
                     {x: 1, y: 1, color: "orange"},
                     {x: 1, y: 2, color: "orange"},
@@ -281,6 +292,9 @@
                 spawnDockCells: [{x: 3, y: 3}, {x: 3, y: 4}, {x: 4, y: 3}, {x: 4, y: 4}],
                 spawnTriggerCell: {x: 3, y: 3},
                 spawnAdjacencyRequirement: 3,
+                spawnRemoverDockCells: [{x: 7, y: 6}, {x: 7, y: 7}, {x: 6, y: 7}],
+                spawnRemoverTriggerCell: {x: 6, y: 6},
+                spawnRemoverAdjacencyRequirement: 2,
                 hintTemplateCells: [
                     {x: 0, y: 0, color: "magenta"},
                     {x: 1, y: 0, color: "magenta"},
@@ -314,6 +328,9 @@
                 spawnDockCells: [{x: 0, y: 0}, {x: 5, y: 5}, {x: 0, y: 5}, {x: 5, y: 0}],
                 spawnTriggerCell: {x: 0, y: 0},
                 spawnAdjacencyRequirement: 1,
+                spawnRemoverDockCells: [{x: 7, y: 6}, {x: 7, y: 7}, {x: 6, y: 7}],
+                spawnRemoverTriggerCell: {x: 6, y: 6},
+                spawnRemoverAdjacencyRequirement: 2,
                 hintTemplateCells: [
                     {x: 5, y: 5, color: "yellow"},
                     {x: 0, y: 0, color: "teal"},
@@ -433,6 +450,19 @@
                         cellColor = level.palette.triggerCell;
                     }
 
+                    // Check if this is spawn remover dock
+                    if (level.spawnRemoverDockCells) {
+                        const isRemoverDock = level.spawnRemoverDockCells.some(dock => dock.x === x && dock.y === y);
+                        if (isRemoverDock && !boardCell.color) {
+                            cellColor = level.palette.spawnDock;
+                        }
+                    }
+
+                    // Check if this is spawn remover trigger cell
+                    if (level.spawnRemoverTriggerCell && level.spawnRemoverTriggerCell.x === x && level.spawnRemoverTriggerCell.y === y && !boardCell.color) {
+                        cellColor = level.palette.triggerCell;
+                    }
+
                     cell.style.backgroundColor = cellColor;
 
                     // Draw avatar
@@ -476,18 +506,26 @@
                 timestamp: Date.now()
             });
 
-            // Check if avatar picks up color from spawned piece
-            const targetCell = board[newY][newX];
-            if (targetCell.color && !targetCell.isTemplate) {
-                avatar.color = targetCell.color;
-                board[newY][newX] = {color: null, isTemplate: false, isGoal: targetCell.isGoal};
+            // Check if avatar picks up color from orthogonally adjacent spawned piece
+            const directions = [{dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}];
+            for (const dir of directions) {
+                const adjX = newX + dir.dx;
+                const adjY = newY + dir.dy;
 
-                logEvent({
-                    type: "pickup",
-                    position: {x: newX, y: newY},
-                    color: avatar.color,
-                    timestamp: Date.now()
-                });
+                if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
+                    const adjCell = board[adjY][adjX];
+                    if (adjCell.color && !adjCell.isTemplate) {
+                        avatar.color = adjCell.color;
+
+                        logEvent({
+                            type: "pickup",
+                            position: {x: adjX, y: adjY},
+                            color: avatar.color,
+                            timestamp: Date.now()
+                        });
+                        break; // Only pick up from one piece
+                    }
+                }
             }
 
             // Try to deposit color in old position
@@ -520,6 +558,11 @@
             // Check spawn trigger
             if (newX === level.spawnTriggerCell.x && newY === level.spawnTriggerCell.y) {
                 checkAndSpawn();
+            }
+
+            // Check spawn remover trigger
+            if (level.spawnRemoverTriggerCell && newX === level.spawnRemoverTriggerCell.x && newY === level.spawnRemoverTriggerCell.y) {
+                checkAndRemoveSpawn();
             }
 
             renderBoard();
@@ -625,6 +668,51 @@
 
                     spawnIndex++;
                     attempts++;
+                }
+            }
+        }
+
+        function checkAndRemoveSpawn() {
+            const level = LEVELS[currentLevel];
+            if (!level.spawnRemoverTriggerCell) return;
+
+            const trigger = level.spawnRemoverTriggerCell;
+
+            // Count adjacent spawn remover dock cells
+            let adjacentDockCount = 0;
+            const directions = [{dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}];
+
+            for (const dir of directions) {
+                const nx = trigger.x + dir.dx;
+                const ny = trigger.y + dir.dy;
+
+                if (level.spawnRemoverDockCells.some(dock => dock.x === nx && dock.y === ny)) {
+                    adjacentDockCount++;
+                }
+            }
+
+            logEvent({
+                type: "spawn_remover_trigger_check",
+                position: {x: trigger.x, y: trigger.y},
+                adjacentDockCount: adjacentDockCount,
+                required: level.spawnRemoverAdjacencyRequirement,
+                timestamp: Date.now()
+            });
+
+            if (adjacentDockCount >= level.spawnRemoverAdjacencyRequirement) {
+                // Remove the most recent spawn
+                if (spawnHistory.length > 0) {
+                    const lastSpawn = spawnHistory.pop();
+                    board[lastSpawn.position.y][lastSpawn.position.x].color = null;
+
+                    logEvent({
+                        type: "spawn_removed",
+                        position: lastSpawn.position,
+                        color: lastSpawn.color,
+                        timestamp: Date.now()
+                    });
+
+                    spawnIndex--;
                 }
             }
         }
