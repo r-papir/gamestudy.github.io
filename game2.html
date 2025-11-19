@@ -150,6 +150,10 @@
 
         .ripple-effect {
             animation: ripple 0.6s ease-out;
+            position: absolute;
+            border-radius: 50%;
+            border: 7px solid #32CD32;
+            opacity: 2;
         }
     </style>
 </head>
@@ -488,6 +492,19 @@
 
             // Check bounds
             if (newX < 0 || newX >= level.boardSize || newY < 0 || newY >= level.boardSize) {
+                return;
+            }
+
+            // Check if target cell is blocked by a piece (spawned or deposited)
+            const targetCell = board[newY][newX];
+            if (targetCell.color && !targetCell.isTemplate) {
+                // Movement blocked - cannot move onto pieces
+                logEvent({
+                    type: "move_blocked",
+                    attemptedPosition: {x: newX, y: newY},
+                    blockedBy: targetCell.color,
+                    timestamp: Date.now()
+                });
                 return;
             }
 
