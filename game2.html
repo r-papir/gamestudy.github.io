@@ -477,54 +477,59 @@
                 timestamp: Date.now()
             });
 
-            // Check if avatar picks up color from orthogonally adjacent spawned piece
+            // Check if avatar touches a piece of the SAME color it's carrying - DEPOSIT and reset
             const directions = [{dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}];
-            for (const dir of directions) {
-                const adjX = newX + dir.dx;
-                const adjY = newY + dir.dy;
+            let deposited = false;
 
-                if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
-                    const adjCell = board[adjX][adjY];
-                    if (adjCell.color && !adjCell.isTemplate) {
-                        avatar.color = adjCell.color;
+            if (avatar.color !== level.palette.avatarDefault) {
+                // Avatar is carrying a color - check if touching same color to deposit
+                for (const dir of directions) {
+                    const adjX = newX + dir.dx;
+                    const adjY = newY + dir.dy;
 
-                        logEvent({
-                            type: "pickup",
-                            position: {x: adjX, y: adjY},
-                            color: avatar.color,
-                            timestamp: Date.now()
-                        });
-                        break; // Only pick up from one piece
+                    if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
+                        const adjCell = board[adjX][adjY];
+                        if (adjCell.color === avatar.color && !adjCell.isTemplate) {
+                            // Touched same color - deposit in current position and reset
+                            board[newX][newY].color = avatar.color;
+                            avatar.color = level.palette.avatarDefault;
+                            deposited = true;
+
+                            logEvent({
+                                type: "deposit",
+                                position: {x: newX, y: newY},
+                                color: board[newX][newY].color,
+                                timestamp: Date.now()
+                            });
+                            break;
+                        }
                     }
                 }
             }
 
-            // Try to deposit color in old position
-            const oldCell = board[oldX][oldY];
-            if (avatar.color !== level.palette.avatarDefault && !oldCell.color && !oldCell.isTemplate) {
-                // Check if old position has orthogonal neighbor with same color
-                if (hasOrthogonalNeighborWithColor(oldX, oldY, avatar.color)) {
-                    board[oldX][oldY].color = avatar.color;
+            // If not deposited, check if avatar picks up color from adjacent piece
+            if (!deposited && avatar.color === level.palette.avatarDefault) {
+                for (const dir of directions) {
+                    const adjX = newX + dir.dx;
+                    const adjY = newY + dir.dy;
 
-                    logEvent({
-                        type: "deposit",
-                        position: {x: oldX, y: oldY},
-                        color: avatar.color,
-                        timestamp: Date.now()
-                    });
-                } else {
-                    logEvent({
-                        type: "deposit_failed",
-                        position: {x: oldX, y: oldY},
-                        color: avatar.color,
-                        reason: "no_adjacent_same_color",
-                        timestamp: Date.now()
-                    });
+                    if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
+                        const adjCell = board[adjX][adjY];
+                        if (adjCell.color && !adjCell.isTemplate) {
+                            // Pick up this color
+                            avatar.color = adjCell.color;
+
+                            logEvent({
+                                type: "pickup",
+                                position: {x: adjX, y: adjY},
+                                color: avatar.color,
+                                timestamp: Date.now()
+                            });
+                            break; // Only pick up from one piece
+                        }
+                    }
                 }
             }
-
-            // Reset avatar color after move
-            avatar.color = level.palette.avatarDefault;
 
             // Check spawn trigger
             if (newX === level.spawnTriggerCell.x && newY === level.spawnTriggerCell.y) {
