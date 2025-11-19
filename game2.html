@@ -522,6 +522,61 @@
                 timestamp: Date.now()
             });
 
+            // Check adjacent cells for pickup or deposit
+            const directions = [{dx: 0, dy: -1}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 1, dy: 0}];
+            let actionTaken = false;
+
+            for (const dir of directions) {
+                const adjX = newX + dir.dx;
+                const adjY = newY + dir.dy;
+
+                if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
+                    const adjCell = board[adjX][adjY];
+
+                    // Check if touching same color - DEPOSIT
+                    if (!adjCell.isTemplate && adjCell.color === avatar.color && avatar.color !== level.palette.avatarDefault) {
+                        // Deposit in current position and reset to gray
+                        board[newX][newY].color = avatar.color;
+                        avatar.color = level.palette.avatarDefault;
+                        actionTaken = true;
+
+                        logEvent({
+                            type: "deposit",
+                            position: {x: newX, y: newY},
+                            color: board[newX][newY].color,
+                            timestamp: Date.now()
+                        });
+                        break;
+                    }
+                }
+            }
+
+            // If didn't deposit, check for pickup
+            if (!actionTaken) {
+                for (const dir of directions) {
+                    const adjX = newX + dir.dx;
+                    const adjY = newY + dir.dy;
+
+                    if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
+                        const adjCell = board[adjX][adjY];
+
+                        // Check if touching a colored piece - PICKUP
+                        if (!adjCell.isTemplate && adjCell.color) {
+                            // Pick up this color (replaces current)
+                            avatar.color = adjCell.color;
+
+                            logEvent({
+                                type: "pickup",
+                                position: {x: adjX, y: adjY},
+                                color: avatar.color,
+                                timestamp: Date.now()
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+
             // Check spawn trigger
             if (newX === level.spawnTriggerCell.x && newY === level.spawnTriggerCell.y) {
                 checkAndSpawn();
