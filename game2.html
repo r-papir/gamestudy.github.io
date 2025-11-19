@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grid Color Game</title>
+    <title>Puzzle Game 2</title>
     <style>
         * {
             margin: 0;
@@ -18,8 +18,8 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: #1a1a1a;
-            color: #fff;
+            background: #fff;
+            color: #1a1a1a;
             padding: 20px;
         }
 
@@ -182,11 +182,9 @@
                 spawnAdjacencyRequirement: 2,
                 hintTemplateCells: [
                     {x: 2, y: 2, color: "purple"},
-                    {x: 2, y: 2, color: "purple"},
-                    {x: 3, y: 3, color: "purple"},
+                    {x: 3, y: 2, color: "purple"},
                     {x: 4, y: 2, color: "purple"},
                     {x: 4, y: 3, color: "purple"},
-                    {x: 4, y: 4, color: "purple"},
                     {x: 4, y: 5, color: "purple"},
                     {x: 5, y: 2, color: "purple"},
                     {x: 5, y: 3, color: "purple"},
@@ -203,10 +201,13 @@
                     {x: 6, y: 2, color: "purple"}
                 ],
                 goalPattern: [
-                    {x: 2, y: 2, requiredColor: "purple"},
                     {x: 2, y: 3, requiredColor: "purple"},
-                    {x: 3, y: 2, requiredColor: "purple"},
-                    {x: 3, y: 3, requiredColor: "purple"}
+                    {x: 2, y: 4, requiredColor: "purple"},
+                    {x: 2, y: 5, requiredColor: "purple"},
+                    {x: 3, y: 3, requiredColor: "purple"},
+                    {x: 3, y: 4, requiredColor: "purple"},
+                    {x: 3, y: 5, requiredColor: "purple"},
+                    {x: 4, y: 4, requiredColor: "purple"}
                 ],
                 palette: {avatarDefault: "gray", spawnDock: "black", triggerCell: "white"}
             },
