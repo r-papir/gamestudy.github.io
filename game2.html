@@ -445,18 +445,20 @@
                 return;
             }
 
-            // Check if target cell is blocked by a piece (spawned or deposited)
-            // Avatar CAN move onto trigger cells, but NOT onto other colored pieces
+            // Check if target cell is blocked by ANY piece
+            // Avatar can ONLY move onto trigger cells - everything else blocks
             const targetCell = board[newX][newY];
             const isOnTrigger = (level.spawnTriggerCell.x === newX && level.spawnTriggerCell.y === newY) ||
                                (level.spawnRemoverTriggerCell && level.spawnRemoverTriggerCell.x === newX && level.spawnRemoverTriggerCell.y === newY);
 
-            if (targetCell.color && !targetCell.isTemplate && !isOnTrigger) {
-                // Movement blocked - cannot move onto pieces (except triggers)
+            // Block if cell has ANY color (template, spawned, or deposited) and is NOT a trigger
+            if (targetCell.color && !isOnTrigger) {
+                // Movement blocked - cannot move onto any pieces except triggers
                 logEvent({
                     type: "move_blocked",
                     attemptedPosition: {x: newX, y: newY},
                     blockedBy: targetCell.color,
+                    isTemplate: targetCell.isTemplate,
                     timestamp: Date.now()
                 });
                 return;
