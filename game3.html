@@ -685,8 +685,28 @@
         document.getElementById('download-button').addEventListener('click', () => {
             sessionData.sessionEnd = new Date().toISOString();
 
-            // Convert to JSON
-            const dataStr = JSON.stringify(sessionData, null, 2);
+            // Convert to JSON with standard formatting first
+            let dataStr = JSON.stringify(sessionData, null, 2);
+
+            // Post-process to compress gameStateBefore arrays into compact rows
+            // Find each gameStateBefore array and compress its rows
+            dataStr = dataStr.replace(
+                /"gameStateBefore":\s*\[\s*\[\s*("[A-Z]",?\s*)+\]\s*(,\s*\[\s*("[A-Z]",?\s*)+\]\s*)*\]/g,
+                (match) => {
+                    // Extract all letters from this matrix
+                    const letters = match.match(/"[A-Z]"/g);
+                    if (!letters) return match;
+
+                    // Group into rows of 7 (for 7x7 grid)
+                    const rows = [];
+                    for (let i = 0; i < letters.length; i += 7) {
+                        rows.push('[' + letters.slice(i, i + 7).join(',') + ']');
+                    }
+
+                    // Format with proper indentation
+                    return '"gameStateBefore": [\n        ' + rows.join(',\n        ') + '\n      ]';
+                }
+            );
 
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
