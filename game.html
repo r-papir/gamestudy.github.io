@@ -116,12 +116,11 @@
 
         #button-container {
             display: none;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 30px;
         }
 
         #restart-button, #download-button {
+            position: fixed;
+            top: 20px;
             padding: 15px 30px;
             font-size: 18px;
             font-family: 'Trebuchet MS', monospace;
@@ -131,6 +130,15 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #restart-button {
+            left: 20px;
+        }
+
+        #download-button {
+            right: 20px;
         }
 
         #restart-button:hover, #download-button:hover {
@@ -414,7 +422,8 @@
                         // Game complete - show restart and download buttons
                         gridElement.classList.remove('fade-out');
                         instructionsElement.classList.remove('fade-out');
-                        document.getElementById('button-container').style.display = 'flex';
+                        document.getElementById('restart-button').style.display = 'block';
+                        document.getElementById('download-button').style.display = 'block';
                     }
                 }, 800);
             }
@@ -490,7 +499,8 @@
         // Handle restart button click
         document.getElementById('restart-button').addEventListener('click', () => {
             currentLevelIndex = 0;
-            document.getElementById('button-container').style.display = 'none';
+            document.getElementById('restart-button').style.display = 'none';
+            document.getElementById('download-button').style.display = 'none';
             loadLevel(currentLevelIndex);
         });
 
@@ -554,7 +564,7 @@
                     [0, 0, 0, 0, 0, 0],
                     [0, 0, 0, 0, 0, 0]
                 ],
-                avatar: { x: 2, y: 4 },
+                avatar: { x: 0, y: 2 },
                 center: { x: 3, y: 2 },
                 targetColor: 'yellow',  // Win by being yellow instead of blue
                 corners: {
