@@ -396,8 +396,8 @@
             gridElement.style.gridTemplateColumns = `repeat(${level.boardSize}, 40px)`;
             gridElement.innerHTML = '';
 
-            for (let x = 0; x < level.boardSize; x++) {
-                for (let y = 0; y < level.boardSize; y++) {
+            for (let y = 0; y < level.boardSize; y++) {
+                for (let x = 0; x < level.boardSize; x++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
 
