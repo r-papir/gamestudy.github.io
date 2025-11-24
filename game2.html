@@ -144,14 +144,9 @@
                     {x: 2, y: 2, color: "purple"},
                     {x: 3, y: 2, color: "purple"},
                     {x: 4, y: 2, color: "purple"},
-                    {x: 4, y: 3, color: "purple"},
-                    {x: 4, y: 5, color: "purple"},
-                    {x: 5, y: 2, color: "purple"},
-                    {x: 5, y: 3, color: "purple"},
-                    {x: 5, y: 4, color: "purple"},
-                    {x: 5, y: 5, color: "purple"}
+                    {x: 4, y: 3, color: "purple"}
                 ],
-                initialStaticPieces: [{x: 6, y: 1, color: "white"}],
+                initialStaticPieces: [],
                 spawnSequence: [
                     {x: 5, y: 4, color: "red"},
                     {x: 1, y: 1, color: "blue"},
@@ -181,12 +176,17 @@
                 spawnRemoverTriggerCell: {x: 6, y: 6},
                 spawnRemoverAdjacencyRequirement: 2,
                 hintTemplateCells: [
-                    {x: 6, y: 6, color: "cyan"},
-                    {x: 6, y: 7, color: "cyan"},
-                    {x: 7, y: 6, color: "cyan"},
-                    {x: 7, y: 7, color: "cyan"}
+                    {x: 2, y: 2, color: "purple"},
+                    {x: 3, y: 2, color: "purple"},
+                    {x: 4, y: 2, color: "purple"},
+                    {x: 4, y: 3, color: "purple"},
+                    {x: 4, y: 5, color: "purple"},
+                    {x: 5, y: 2, color: "purple"},
+                    {x: 5, y: 3, color: "purple"},
+                    {x: 5, y: 4, color: "purple"},
+                    {x: 5, y: 5, color: "purple"}
                 ],
-                initialStaticPieces: [{x: 6, y: 1, color: "white"}],
+                initialStaticPieces: [],
                 spawnSequence: [
                     {x: 3, y: 3, color: "yellow"},
                     {x: 2, y: 2, color: "yellow"},
@@ -220,7 +220,7 @@
                     {x: 5, y: 5, color: "lime"},
                     {x: 5, y: 6, color: "lime"}
                 ],
-                initialStaticPieces: [{x: 6, y: 1, color: "white"}],
+                initialStaticPieces: [],
                 spawnSequence: [
                     {x: 4, y: 4, color: "green"},
                     {x: 3, y: 5, color: "green"},
@@ -257,7 +257,7 @@
                     {x: 7, y: 0, color: "teal"},
                     {x: 7, y: 1, color: "teal"}
                 ],
-                initialStaticPieces: [{x: 6, y: 1, color: "white"}],
+                initialStaticPieces: [],
                 spawnSequence: [
                     {x: 2, y: 6, color: "pink"},
                     {x: 5, y: 5, color: "pink"},
@@ -292,7 +292,7 @@
                     {x: 0, y: 5, color: "blue"},
                     {x: 5, y: 0, color: "pink"}
                 ],
-                initialStaticPieces: [{x: 6, y: 1, color: "white"}],
+                initialStaticPieces: [],
                 spawnSequence: [
                     {x: 2, y: 2, color: "red"},
                     {x: 3, y: 3, color: "red"},
@@ -460,29 +460,9 @@
 
             // Block if cell has ANY color (template, spawned, or deposited) and is NOT a trigger
             if (targetCell.color && !isOnTrigger) {
-                // Check if avatar can deposit (carrying same color as blocked piece)
-                if (!targetCell.isTemplate && avatar.color === targetCell.color && avatar.color !== level.palette.avatarDefault) {
-                    // Avatar touched same color - deposit in previous position and reset
-                    const oldX = avatar.x;
-                    const oldY = avatar.y;
-                    board[oldX][oldY].color = avatar.color;
-                    avatar.color = level.palette.avatarDefault;
-
-                    logEvent({
-                        type: "deposit",
-                        position: {x: oldX, y: oldY},
-                        color: board[oldX][oldY].color,
-                        timestamp: Date.now()
-                    });
-
-                    renderBoard();
-                    checkWinCondition();
-                    return; // Movement blocked, but deposited
-                }
-
                 // Movement blocked - but check if avatar can pick up color from spawned piece
-                if (!targetCell.isTemplate) {
-                    // Avatar touched a spawned/deposited piece - pick up the color (replaces current color)
+                if (!targetCell.isTemplate && avatar.color === level.palette.avatarDefault) {
+                    // Avatar is not carrying anything - pick up the color (replaces current color)
                     avatar.color = targetCell.color;
 
                     logEvent({
@@ -496,7 +476,7 @@
                     return; // Movement still blocked, but color picked up
                 }
 
-                // Just blocked, no pickup or deposit
+                // Just blocked, no pickup
                 logEvent({
                     type: "move_blocked",
                     attemptedPosition: {x: newX, y: newY},
