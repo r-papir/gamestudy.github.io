@@ -132,6 +132,24 @@
 
     <script>
         // ============================
+        // COLOR PALETTE
+        // ============================
+        const COLORS = {
+            gray: "#D3D3D3",
+            blue: "#ADD8E6",
+            yellow: "#DDCC77",
+            teal: "#44AA99",
+            pink: "#CC6677",
+            violet: "#332288",
+            lime: "#BBCC33",
+            magenta: "#882255",
+            blue2: "#88CCEE",
+            black: "#000000",
+            white: "#FFFFFF",
+            lavender: "E0CCF5"
+        };
+
+        // ============================
         // LEVEL DEFINITIONS
         // ============================
         const LEVELS = {
@@ -145,23 +163,23 @@
                 spawnRemoverTriggerCell: {x: 7, y: 7},
                 spawnRemoverAdjacencyRequirement: 0,
                 hintTemplateCells: [
-                    {x: 3, y: 4, color: "purple"}
+                    {x: 3, y: 4, color: COLORS.lavender}
                 ],
                 initialStaticPieces: [],
                 spawnSequence: [
-                    {x: 0, y: 0, color: "red"},
-                    {x: 0, y: 7, color: "cyan"},
-                    {x: 5, y: 2, color: "lime"},
-                    {x: 4, y: 1, color: "purple"},
-                    {x: 7, y: 5, color: "red"},
-                    {x: 6, y: 2, color: "cyan"}
+                    {x: 0, y: 0, color: COLORS.pink},
+                    {x: 7, y: 0, color: COLORS.blue},
+                    {x: 5, y: 2, color: COLORS.lime},
+                    {x: 4, y: 1, color: COLORS.lavender},
+                    {x: 7, y: 5, color: COLORS.pink},
+                    {x: 6, y: 2, color: COLORS.blue2}
                 ],
                 goalPattern: [
-                    {x: 3, y: 3, requiredColor: "purple"},
-                    {x: 4, y: 3, requiredColor: "purple"},
-                    {x: 4, y: 4, requiredColor: "purple"}
+                    {x: 3, y: 3, requiredColor: COLORS.violet},
+                    {x: 4, y: 3, requiredColor: COLORS.violet},
+                    {x: 4, y: 4, requiredColor: COLORS.violet}
                 ],
-                palette: {avatarDefault: "gray", spawnDock: "black", triggerCell: "white"}
+                palette: {avatarDefault: COLORS.gray, spawnDock: COLORS.black, triggerCell: COLORS.white}
             },
             2: {
                 boardSize: 8,
@@ -173,32 +191,32 @@
                 spawnRemoverTriggerCell: {x: 7, y: 7},
                 spawnRemoverAdjacencyRequirement: 0,
                 hintTemplateCells: [
-                    {x: 2, y: 2, color: "purple"},
-                    {x: 3, y: 2, color: "purple"},
-                    {x: 4, y: 2, color: "purple"},
-                    {x: 4, y: 3, color: "purple"},
-                    {x: 4, y: 5, color: "purple"},
-                    {x: 5, y: 2, color: "purple"},
-                    {x: 5, y: 3, color: "purple"},
-                    {x: 5, y: 4, color: "purple"},
-                    {x: 5, y: 5, color: "purple"}
+                    {x: 2, y: 2, color: COLORS.violet},
+                    {x: 3, y: 2, color: COLORS.violet},
+                    {x: 4, y: 2, color: COLORS.violet},
+                    {x: 4, y: 3, color: COLORS.violet},
+                    {x: 4, y: 5, color: COLORS.violet},
+                    {x: 5, y: 2, color: COLORS.violet},
+                    {x: 5, y: 3, color: COLORS.violet},
+                    {x: 5, y: 4, color: COLORS.violet},
+                    {x: 5, y: 5, color: COLORS.violet}
                 ],
                 initialStaticPieces: [],
                 spawnSequence: [
-                    {x: 3, y: 3, color: "yellow"},
-                    {x: 2, y: 2, color: "yellow"},
-                    {x: 5, y: 5, color: "cyan"},
-                    {x: 5, y: 6, color: "cyan"},
-                    {x: 6, y: 5, color: "cyan"},
-                    {x: 4, y: 7, color: "cyan"}
+                    {x: 3, y: 3, color: COLORS.yellow},
+                    {x: 2, y: 2, color: COLORS.yellow},
+                    {x: 5, y: 5, color: COLORS.blue2},
+                    {x: 5, y: 6, color: COLORS.blue2},
+                    {x: 6, y: 5, color: COLORS.blue2},
+                    {x: 4, y: 7, color: COLORS.blue2}
                 ],
                 goalPattern: [
-                    {x: 6, y: 6, requiredColor: "cyan"},
-                    {x: 6, y: 7, requiredColor: "cyan"},
-                    {x: 7, y: 6, requiredColor: "cyan"},
-                    {x: 7, y: 7, requiredColor: "cyan"}
+                    {x: 6, y: 6, requiredColor: COLORS.blue2},
+                    {x: 6, y: 7, requiredColor: COLORS.blue2},
+                    {x: 7, y: 6, requiredColor: COLORS.blue2},
+                    {x: 7, y: 7, requiredColor: COLORS.blue2}
                 ],
-                palette: {avatarDefault: "gray", spawnDock: "black", triggerCell: "white"}
+                palette: {avatarDefault: COLORS.gray, spawnDock: COLORS.black, triggerCell: COLORS.white}
             },
             3: {
                 boardSize: 8,
@@ -210,33 +228,33 @@
                 spawnRemoverTriggerCell: {x: 7, y: 7},
                 spawnRemoverAdjacencyRequirement: 0,
                 hintTemplateCells: [
-                    {x: 1, y: 1, color: "orange"},
-                    {x: 1, y: 2, color: "orange"},
-                    {x: 2, y: 1, color: "orange"},
-                    {x: 2, y: 2, color: "orange"},
-                    {x: 5, y: 5, color: "lime"},
-                    {x: 5, y: 6, color: "lime"}
+                    {x: 1, y: 1, color: COLORS.yellow},
+                    {x: 1, y: 2, color: COLORS.yellow},
+                    {x: 2, y: 1, color: COLORS.yellow},
+                    {x: 2, y: 2, color: COLORS.yellow},
+                    {x: 5, y: 5, color: COLORS.lime},
+                    {x: 5, y: 6, color: COLORS.lime}
                 ],
                 initialStaticPieces: [],
                 spawnSequence: [
-                    {x: 4, y: 4, color: "green"},
-                    {x: 3, y: 5, color: "green"},
-                    {x: 2, y: 3, color: "orange"},
-                    {x: 0, y: 1, color: "orange"},
-                    {x: 0, y: 2, color: "orange"},
-                    {x: 1, y: 3, color: "orange"},
-                    {x: 6, y: 5, color: "lime"},
-                    {x: 4, y: 6, color: "lime"}
+                    {x: 4, y: 4, color: COLORS.lime},
+                    {x: 3, y: 5, color: COLORS.lime},
+                    {x: 2, y: 3, color: COLORS.yellow},
+                    {x: 0, y: 1, color: COLORS.yellow},
+                    {x: 0, y: 2, color: COLORS.yellow},
+                    {x: 1, y: 3, color: COLORS.yellow},
+                    {x: 6, y: 5, color: COLORS.lime},
+                    {x: 4, y: 6, color: COLORS.lime}
                 ],
                 goalPattern: [
-                    {x: 1, y: 1, requiredColor: "orange"},
-                    {x: 1, y: 2, requiredColor: "orange"},
-                    {x: 2, y: 1, requiredColor: "orange"},
-                    {x: 2, y: 2, requiredColor: "orange"},
-                    {x: 5, y: 5, requiredColor: "lime"},
-                    {x: 5, y: 6, requiredColor: "lime"}
+                    {x: 1, y: 1, requiredColor: COLORS.yellow},
+                    {x: 1, y: 2, requiredColor: COLORS.yellow},
+                    {x: 2, y: 1, requiredColor: COLORS.yellow},
+                    {x: 2, y: 2, requiredColor: COLORS.yellow},
+                    {x: 5, y: 5, requiredColor: COLORS.lime},
+                    {x: 5, y: 6, requiredColor: COLORS.lime}
                 ],
-                palette: {avatarDefault: "gray", spawnDock: "black", triggerCell: "white"}
+                palette: {avatarDefault: COLORS.gray, spawnDock: COLORS.black, triggerCell: COLORS.white}
             },
             4: {
                 boardSize: 8,
@@ -248,31 +266,31 @@
                 spawnRemoverTriggerCell: {x: 7, y: 7},
                 spawnRemoverAdjacencyRequirement: 0,
                 hintTemplateCells: [
-                    {x: 0, y: 0, color: "magenta"},
-                    {x: 1, y: 0, color: "magenta"},
-                    {x: 0, y: 1, color: "magenta"},
-                    {x: 7, y: 0, color: "teal"},
-                    {x: 7, y: 1, color: "teal"}
+                    {x: 0, y: 0, color: COLORS.magenta},
+                    {x: 1, y: 0, color: COLORS.magenta},
+                    {x: 0, y: 1, color: COLORS.magenta},
+                    {x: 7, y: 0, color: COLORS.teal},
+                    {x: 7, y: 1, color: COLORS.teal}
                 ],
                 initialStaticPieces: [],
                 spawnSequence: [
-                    {x: 2, y: 6, color: "pink"},
-                    {x: 5, y: 5, color: "pink"},
-                    {x: 1, y: 1, color: "magenta"},
-                    {x: 2, y: 0, color: "magenta"},
-                    {x: 0, y: 2, color: "magenta"},
-                    {x: 6, y: 0, color: "teal"},
-                    {x: 6, y: 1, color: "teal"},
-                    {x: 7, y: 2, color: "teal"}
+                    {x: 2, y: 6, color: COLORS.pink},
+                    {x: 5, y: 5, color: COLORS.pink},
+                    {x: 1, y: 1, color: COLORS.magenta},
+                    {x: 2, y: 0, color: COLORS.magenta},
+                    {x: 0, y: 2, color: COLORS.magenta},
+                    {x: 6, y: 0, color: COLORS.teal},
+                    {x: 6, y: 1, color: COLORS.teal},
+                    {x: 7, y: 2, color: COLORS.teal}
                 ],
                 goalPattern: [
-                    {x: 0, y: 0, requiredColor: "magenta"},
-                    {x: 1, y: 0, requiredColor: "magenta"},
-                    {x: 0, y: 1, requiredColor: "magenta"},
-                    {x: 7, y: 0, requiredColor: "teal"},
-                    {x: 7, y: 1, requiredColor: "teal"}
+                    {x: 0, y: 0, requiredColor: COLORS.magenta},
+                    {x: 1, y: 0, requiredColor: COLORS.magenta},
+                    {x: 0, y: 1, requiredColor: COLORS.magenta},
+                    {x: 7, y: 0, requiredColor: COLORS.teal},
+                    {x: 7, y: 1, requiredColor: COLORS.teal}
                 ],
-                palette: {avatarDefault: "gray", spawnDock: "black", triggerCell: "white"}
+                palette: {avatarDefault: COLORS.gray, spawnDock: COLORS.black, triggerCell: COLORS.white}
             },
             5: {
                 boardSize: 8,
@@ -284,29 +302,29 @@
                 spawnRemoverTriggerCell: {x: 7, y: 7},
                 spawnRemoverAdjacencyRequirement: 0,
                 hintTemplateCells: [
-                    {x: 5, y: 5, color: "yellow"},
-                    {x: 0, y: 0, color: "teal"},
-                    {x: 0, y: 5, color: "blue"},
-                    {x: 5, y: 0, color: "pink"}
+                    {x: 5, y: 5, color: COLORS.yellow},
+                    {x: 0, y: 0, color: COLORS.teal},
+                    {x: 0, y: 5, color: COLORS.blue},
+                    {x: 5, y: 0, color: COLORS.pink}
                 ],
                 initialStaticPieces: [],
                 spawnSequence: [
-                    {x: 2, y: 2, color: "red"},
-                    {x: 3, y: 3, color: "red"},
-                    {x: 1, y: 4, color: "blue"},
-                    {x: 0, y: 4, color: "blue"},
-                    {x: 4, y: 1, color: "pink"},
-                    {x: 4, y: 0, color: "pink"},
-                    {x: 4, y: 4, color: "yellow"},
-                    {x: 5, y: 4, color: "yellow"}
+                    {x: 2, y: 2, color: COLORS.pink},
+                    {x: 3, y: 3, color: COLORS.pink},
+                    {x: 1, y: 4, color: COLORS.blue},
+                    {x: 0, y: 4, color: COLORS.blue},
+                    {x: 4, y: 1, color: COLORS.pink},
+                    {x: 4, y: 0, color: COLORS.pink},
+                    {x: 4, y: 4, color: COLORS.yellow},
+                    {x: 5, y: 4, color: COLORS.yellow}
                 ],
                 goalPattern: [
-                    {x: 5, y: 5, requiredColor: "yellow"},
-                    {x: 0, y: 0, requiredColor: "teal"},
-                    {x: 0, y: 5, requiredColor: "blue"},
-                    {x: 5, y: 0, requiredColor: "pink"}
+                    {x: 5, y: 5, requiredColor: COLORS.yellow},
+                    {x: 0, y: 0, requiredColor: COLORS.teal},
+                    {x: 0, y: 5, requiredColor: COLORS.blue},
+                    {x: 5, y: 0, requiredColor: COLORS.pink}
                 ],
-                palette: {avatarDefault: "gray", spawnDock: "black", triggerCell: "white"}
+                palette: {avatarDefault: COLORS.gray, spawnDock: COLORS.black, triggerCell: COLORS.white}
             }
         };
 
