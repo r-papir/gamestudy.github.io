@@ -163,12 +163,12 @@
                 spawnRemoverTriggerCell: {x: 7, y: 7},
                 spawnRemoverAdjacencyRequirement: 0,
                 hintTemplateCells: [
-                    {x: 3, y: 4, color: COLORS.lavender}
+                    {x: 3, y: 4, color: COLORS.lavender},
                 ],
                 initialStaticPieces: [],
                 spawnSequence: [
                     {x: 0, y: 0, color: COLORS.pink},
-                    {x: 0, y: 7, color: COLORS.blue},
+                    {x: 7, y: 0, color: COLORS.blue},
                     {x: 2, y: 5, color: COLORS.lime},
                     {x: 4, y: 1, color: COLORS.lavender},
                     {x: 7, y: 5, color: COLORS.pink},
@@ -176,6 +176,7 @@
                 ],
                 goalPattern: [
                     {x: 3, y: 3, requiredColor: COLORS.violet},
+                    {x: 3, y: 4, requiredColor: COLORS.violet},
                     {x: 4, y: 3, requiredColor: COLORS.violet},
                     {x: 4, y: 4, requiredColor: COLORS.violet}
                 ],
@@ -351,29 +352,27 @@
             };
 
             // Initialize empty board
-            // board[row][col] where row increases downward (y), col increases rightward (x)
             board = [];
-            for (let row = 0; row < level.boardSize; row++) {
-                board[row] = [];
-                for (let col = 0; col < level.boardSize; col++) {
-                    board[row][col] = {color: null, isTemplate: false, isGoal: false};
+            for (let x = 0; x < level.boardSize; x++) {
+                board[x] = [];
+                for (let y = 0; y < level.boardSize; y++) {
+                    board[x][y] = {color: null, isTemplate: false, isGoal: false};
                 }
             }
 
             // Place hint template cells
-            // x = column, y = row
             level.hintTemplateCells.forEach(cell => {
-                board[cell.y][cell.x] = {color: cell.color, isTemplate: true, isGoal: false};
+                board[cell.x][cell.y] = {color: cell.color, isTemplate: true, isGoal: false};
             });
 
             // Place initial static pieces
             level.initialStaticPieces.forEach(piece => {
-                board[piece.y][piece.x] = {color: piece.color, isTemplate: false, isGoal: false};
+                board[piece.x][piece.y] = {color: piece.color, isTemplate: false, isGoal: false};
             });
 
             // Mark goal pattern cells
             level.goalPattern.forEach(goal => {
-                board[goal.y][goal.x].isGoal = true;
+                board[goal.x][goal.y].isGoal = true;
             });
 
             spawnIndex = 0;
@@ -398,15 +397,10 @@
             gridElement.style.gridTemplateColumns = `repeat(${level.boardSize}, 40px)`;
             gridElement.innerHTML = '';
 
-            // Render row by row (y), left to right (x)
-            // board[row][col] = board[y][x]
-            for (let row = 0; row < level.boardSize; row++) {
-                for (let col = 0; col < level.boardSize; col++) {
+            for (let y = 0; y < level.boardSize; y++) {
+                for (let x = 0; x < level.boardSize; x++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
-
-                    const x = col;  // x represents column position
-                    const y = row;  // y represents row position
 
                     // Determine cell color
                     let cellColor = '#fff';
@@ -480,10 +474,9 @@
             }
 
             // Check if target cell is blocked by ANY piece
-            // Avatar can ONLY move onto the two dock cells at (0,7) and (7,7) - everything else blocks
-            // board[row][col] = board[y][x]
-            const targetCell = board[newY][newX];
-            const isOnSpawnDock = (newX === 0 && newY === 7);
+            // Avatar can ONLY move onto the two dock cells at (7,0) and (7,7) - everything else blocks
+            const targetCell = board[newX][newY];
+            const isOnSpawnDock = (newX === 7 && newY === 0);
             const isOnRemoverDock = (newX === 7 && newY === 7);
             const isOnDock = isOnSpawnDock || isOnRemoverDock;
 
@@ -540,19 +533,19 @@
                 const adjY = newY + dir.dy;
 
                 if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
-                    const adjCell = board[adjY][adjX];
+                    const adjCell = board[adjX][adjY];
 
                     // Check if touching same color - DEPOSIT (works with any colored cell including templates)
                     if (adjCell.color === avatar.color && avatar.color !== level.palette.avatarDefault) {
                         // Deposit in current position and reset to gray
-                        board[newY][newX].color = avatar.color;
+                        board[newX][newY].color = avatar.color;
                         avatar.color = level.palette.avatarDefault;
                         actionTaken = true;
 
                         logEvent({
                             type: "deposit",
                             position: {x: newX, y: newY},
-                            color: board[newY][newX].color,
+                            color: board[newX][newY].color,
                             timestamp: Date.now()
                         });
                         break;
@@ -567,7 +560,7 @@
                     const adjY = newY + dir.dy;
 
                     if (adjX >= 0 && adjX < level.boardSize && adjY >= 0 && adjY < level.boardSize) {
-                        const adjCell = board[adjY][adjX];
+                        const adjCell = board[adjX][adjY];
 
                         // Check if touching a colored piece - PICKUP
                         if (!adjCell.isTemplate && adjCell.color) {
@@ -609,7 +602,7 @@
                 const ny = y + dir.dy;
 
                 if (nx >= 0 && nx < level.boardSize && ny >= 0 && ny < level.boardSize) {
-                    if (board[ny][nx].color === color) {
+                    if (board[nx][ny].color === color) {
                         return true;
                     }
                 }
@@ -665,11 +658,11 @@
 
             while (!spawned && spawnIndex < level.spawnSequence.length && attempts < level.spawnSequence.length) {
                 const spawn = level.spawnSequence[spawnIndex];
-                const targetCell = board[spawn.y][spawn.x];
+                const targetCell = board[spawn.x][spawn.y];
 
                 if (!targetCell.color && !targetCell.isTemplate) {
                     // Spawn successful
-                    board[spawn.y][spawn.x].color = spawn.color;
+                    board[spawn.x][spawn.y].color = spawn.color;
                     spawnHistory.push({
                         index: spawnIndex,
                         position: {x: spawn.x, y: spawn.y},
@@ -734,7 +727,7 @@
                 // Remove the most recent spawn
                 if (spawnHistory.length > 0) {
                     const lastSpawn = spawnHistory.pop();
-                    board[lastSpawn.position.y][lastSpawn.position.x].color = null;
+                    board[lastSpawn.position.x][lastSpawn.position.y].color = null;
 
                     logEvent({
                         type: "spawn_removed",
@@ -757,7 +750,7 @@
             let allMatch = true;
 
             for (const goal of level.goalPattern) {
-                const cell = board[goal.y][goal.x];
+                const cell = board[goal.x][goal.y];
                 if (cell.color !== goal.requiredColor) {
                     allMatch = false;
                     break;
@@ -835,19 +828,19 @@
             switch(e.key) {
                 case 'ArrowUp':
                     e.preventDefault();
-                    moveAvatar(0, -1); // decrease y (move up)
+                    moveAvatar(0, -1); // decrease y/row (move up)
                     break;
                 case 'ArrowDown':
                     e.preventDefault();
-                    moveAvatar(0, 1); // increase y (move down)
+                    moveAvatar(0, 1); // increase y/row (move down)
                     break;
                 case 'ArrowLeft':
                     e.preventDefault();
-                    moveAvatar(-1, 0); // decrease x (move left)
+                    moveAvatar(-1, 0); // decrease x/col (move left)
                     break;
                 case 'ArrowRight':
                     e.preventDefault();
-                    moveAvatar(1, 0); // increase x (move right)
+                    moveAvatar(1, 0); // increase x/col (move right)
                     break;
             }
         });
