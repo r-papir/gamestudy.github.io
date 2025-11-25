@@ -348,6 +348,46 @@
                 title: "Level 3",
                 avatarStart: { row: 5, col: 1 },
                 dock: { row: 3, col: 3 },
+                cyclicSpawn: ["pink", "blue", "yellow", "violet", "lime", "teal", "magenta", "lavender"],
+                partialPattern: [],
+                targets: [
+                    // Row 1: pink, yellow, pink, yellow, pink
+                    { row: 1, col: 1, color: "pink" },
+                    { row: 1, col: 2, color: "yellow" },
+                    { row: 1, col: 3, color: "pink" },
+                    { row: 1, col: 4, color: "yellow" },
+                    { row: 1, col: 5, color: "pink" },
+                    // Row 2: yellow, magenta, lavender, magenta, yellow
+                    { row: 2, col: 1, color: "yellow" },
+                    { row: 2, col: 2, color: "magenta" },
+                    { row: 2, col: 3, color: "lavender" },
+                    { row: 2, col: 4, color: "magenta" },
+                    { row: 2, col: 5, color: "yellow" },
+                    // Row 3: pink, lavender, [DOCK], lavender, pink
+                    { row: 3, col: 1, color: "pink" },
+                    { row: 3, col: 2, color: "lavender" },
+                    // col 3 is dock
+                    { row: 3, col: 4, color: "lavender" },
+                    { row: 3, col: 5, color: "pink" },
+                    // Row 4: yellow, magenta, lavender, magenta, yellow
+                    { row: 4, col: 1, color: "yellow" },
+                    { row: 4, col: 2, color: "magenta" },
+                    { row: 4, col: 3, color: "lavender" },
+                    { row: 4, col: 4, color: "magenta" },
+                    { row: 4, col: 5, color: "yellow" },
+                    // Row 5: pink, yellow, pink, yellow, pink
+                    { row: 5, col: 1, color: "pink" },
+                    { row: 5, col: 2, color: "yellow" },
+                    { row: 5, col: 3, color: "pink" },
+                    { row: 5, col: 4, color: "yellow" },
+                    { row: 5, col: 5, color: "pink" }
+                ]
+            },
+            {
+                id: 4,
+                title: "Level 4",
+                avatarStart: { row: 5, col: 1 },
+                dock: { row: 3, col: 3 },
                 cyclicSpawn: ["pink", "blue", "yellow", "violet", "lime", "teal", "magenta"],
                 partialPattern: [],
                 targets: [
