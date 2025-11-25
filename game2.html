@@ -506,13 +506,12 @@
 
             // Check if entered dock
             if (grid[newRow][newCol].isDock) {
-                if (!dragging) {
-                    // Empty-handed: spawn a new color
-                    spawnColor();
-                } else {
-                    // Carrying a block: trash it
+                if (dragging) {
+                    // Carrying a block: trash it first
                     removeBlock();
                 }
+                // Always spawn a new color when entering dock
+                spawnColor();
             }
 
             // Update dragging position if currently dragging
