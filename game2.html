@@ -409,17 +409,7 @@
                 return;
             }
 
-            // Check if blocked by locked piece
-            if (grid[newRow][newCol].isLocked) {
-                logEvent({
-                    type: "move_blocked",
-                    reason: "locked_piece",
-                    attemptedPosition: { row: newRow, col: newCol },
-                    keyPressed: keyPressed,
-                    timestamp: Date.now()
-                });
-                return;
-            }
+            // Avatar can now move over locked pieces (no blocking)
 
             // Check if blocked by dragged piece (can't move into trailing block)
             if (dragging && dragging.currentPos &&
@@ -532,8 +522,8 @@
             const col = dragging.currentPos.col;
             const cell = grid[row][col];
 
-            // Check if this is a target cell with matching color
-            if (cell.isTarget && cell.targetColor === dragging.colorKey) {
+            // Check if this is a target cell with matching color AND not already locked
+            if (cell.isTarget && cell.targetColor === dragging.colorKey && !cell.isLocked) {
                 // Lock the block
                 grid[row][col].color = dragging.colorHex;
                 grid[row][col].isLocked = true;
