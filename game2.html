@@ -161,6 +161,24 @@
         .lock-animation {
             animation: lockPulse 0.3s ease-out;
         }
+
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .ripple-effect {
+            animation: ripple 0.6s ease-out;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
     </style>
 </head>
 <body>
@@ -207,7 +225,7 @@
                 title: "Level 1",
                 avatarStart: { row: 5, col: 1 },
                 dock: { row: 3, col: 3 },
-                spawnPool: ["blue", "magenta", "lime", "blue", "violet", "yellow", "magenta", "teal", "lime"],
+                cyclicSpawn: ["blue", "pink", "magenta", "violet"],
                 partialPattern: [],
                 targets: [
                     // Outer perimeter - all blue (16 pieces)
@@ -384,8 +402,11 @@
             moveCount = 0;
             spawnIndex = 0;
 
-            // Shuffle spawn pool if defined
-            if (level.spawnPool) {
+            // Set up spawn sequence based on level type
+            if (level.cyclicSpawn) {
+                // Cyclic spawning - no sequence limit
+                spawnSequence = level.cyclicSpawn;
+            } else if (level.spawnPool) {
                 spawnSequence = shuffleArray([...level.spawnPool]);
             } else if (level.spawnSequence) {
                 spawnSequence = [...level.spawnSequence];
@@ -530,8 +551,13 @@
             const level = LEVELS[currentLevel];
             let colorKey;
 
-            // Use shuffled spawn sequence if available
-            if (spawnSequence.length > 0 && spawnIndex < spawnSequence.length) {
+            // Check if using cyclic spawning
+            if (level.cyclicSpawn && spawnSequence.length > 0) {
+                // Cyclic: loop through the sequence indefinitely
+                colorKey = spawnSequence[spawnIndex % spawnSequence.length];
+                spawnIndex++;
+            } else if (spawnSequence.length > 0 && spawnIndex < spawnSequence.length) {
+                // Fixed sequence
                 colorKey = spawnSequence[spawnIndex];
                 spawnIndex++;
             } else if (level.enabledColors) {
@@ -630,8 +656,34 @@
                     timestamp: Date.now()
                 });
 
-                showLevelComplete();
+                triggerLevelComplete();
             }
+        }
+
+        function triggerLevelComplete() {
+            const gridElement = document.getElementById('grid');
+
+            // Add ripple effect
+            gridElement.classList.add('ripple-effect');
+
+            setTimeout(() => {
+                // Add fade out
+                gridElement.classList.add('fade-out');
+
+                setTimeout(() => {
+                    // Remove effects
+                    gridElement.classList.remove('ripple-effect', 'fade-out');
+
+                    // Auto-advance to next level or show restart
+                    if (currentLevel < LEVELS.length - 1) {
+                        currentLevel++;
+                        initGame();
+                    } else {
+                        // Last level completed - show restart button
+                        document.getElementById('restart-btn').style.display = 'block';
+                    }
+                }, 500); // Fade out duration
+            }, 600); // Ripple duration
         }
 
         function showLevelComplete() {
