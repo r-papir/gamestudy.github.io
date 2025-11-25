@@ -148,7 +148,7 @@
         let levels = [];
         let currentLevelIndex = 0;
         let isBKeyPressed = false; // Track if B key is being held
-        let isTransitioning = false; // Prevent multiple auto-advance triggers
+        let isTransitioning = false; // Prevent multiple level transitions
         let gameState = {
             grid: [],
             chunks: [],
@@ -442,20 +442,13 @@
 
             renderGrid();
 
-            // Check if path is complete and auto-advance
-            checkAndAdvanceLevel();
-        }
+            // Check if path is now complete and auto-advance
+            if (!isTransitioning && canReachGoal()) {
+                isTransitioning = true;
 
-        // Check if path is complete and advance to next level
-        function checkAndAdvanceLevel() {
-            // Prevent multiple triggers
-            if (isTransitioning) return;
-
-            if (canReachGoal()) {
-                isTransitioning = true; // Lock to prevent re-triggering
-
-                // Path is complete - wait 1 second before showing vehicle move to goal
+                // Wait 1 second before starting the transition
                 setTimeout(() => {
+                    // Move vehicle to goal
                     // Clear vehicle(s) from old position(s)
                     for (let row = 0; row < 7; row++) {
                         for (let col = 0; col < 7; col++) {
@@ -474,10 +467,10 @@
 
                     renderGrid();
 
-                    // Win! Show ripple and let player see the completed state
+                    // Show ripple effect
                     createRipple();
 
-                    // Wait 1.5 seconds to let player see vehicle at goal, then fade out
+                    // Wait 1.5 seconds to let player see vehicle at goal, then fade and advance
                     setTimeout(() => {
                         const gridElement = document.getElementById('grid');
                         gridElement.classList.add('fade-out');
@@ -493,8 +486,8 @@
                                 document.getElementById('restart-button').style.display = 'block';
                             }
                         }, 800);
-                    }, 1500); // Wait 1.5 seconds before fading out
-                }, 1000); // 1 second delay before moving vehicle to goal
+                    }, 1500);
+                }, 1000);
             }
         }
 
@@ -566,6 +559,49 @@
 
             // All vehicles can reach the goal
             return true;
+        }
+
+        // Move vehicle
+        function moveVehicle() {
+            if (!canReachGoal()) {
+                return; // Path not complete
+            }
+
+            // Clear vehicle(s) from old position(s)
+            // For Level 4 with two vehicles, clear both; otherwise just clear the one
+            for (let row = 0; row < 7; row++) {
+                for (let col = 0; col < 7; col++) {
+                    if (gameState.grid[row][col] === 3) {
+                        gameState.grid[row][col] = 1; // Convert vehicle to track
+                    }
+                }
+            }
+
+            // Move vehicle to goal (both vehicles converge to same position in Level 4)
+            gameState.vehiclePos = { ...gameState.goalPos };
+            gameState.grid[gameState.vehiclePos.row][gameState.vehiclePos.col] = 3;
+
+            // Clear selection so pathway shows uniformly on completion
+            gameState.selectedChunkIndex = -1;
+
+            renderGrid();
+
+            // Win! Move to next level
+            createRipple();
+
+            const gridElement = document.getElementById('grid');
+            gridElement.classList.add('fade-out');
+
+            setTimeout(() => {
+                currentLevelIndex++;
+                if (currentLevelIndex < levels.length) {
+                    loadLevel(currentLevelIndex);
+                } else {
+                    // Game complete - show restart button
+                    gridElement.classList.remove('fade-out');
+                    document.getElementById('restart-button').style.display = 'block';
+                }
+            }, 800);
         }
 
         // Create ripple effect
@@ -660,7 +696,7 @@
                     e.preventDefault();
                     if (!isBKeyPressed) {
                         isBKeyPressed = true;
-                        renderGrid(); // Re-render to remove selection color
+                        renderGrid(); // Re-render to remove gray selection color
                         logEvent('B', 'visualize_board');
                     }
                     break;
