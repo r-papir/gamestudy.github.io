@@ -588,10 +588,11 @@
                     // Check if avatar is here (but hide if level completed)
                     const isAvatar = (avatar.row === row && avatar.col === col) && !levelCompleted;
 
-                    // Check if dragged block is here
+                    // Check if dragged block is here (but hide if level completed)
                     const isDragged = dragging && dragging.currentPos &&
                                      dragging.currentPos.row === row &&
-                                     dragging.currentPos.col === col;
+                                     dragging.currentPos.col === col &&
+                                     !levelCompleted;
 
                     if (isAvatar) {
                         cell.classList.add('avatar');
