@@ -305,7 +305,7 @@
             {
                 id: 2,
                 title: "Level 2",
-                avatarStart: { row: 5, col: 1 },
+                avatarStart: { row: 1, col: 5 },
                 dock: { row: 3, col: 3 },
                 cyclicSpawn: ["yellow", "lime", "teal", "blue", "violet"],
                 partialPattern: [],
@@ -345,10 +345,11 @@
             {
                 id: 3,
                 title: "Level 3",
-                avatarStart: { row: 5, col: 1 },
+                avatarStart: { row: 3, col: 4 },
                 dock: { row: 3, col: 3 },
                 cyclicSpawn: ["pink", "blue", "yellow", "violet", "lime", "teal", "magenta", "lavender"],
                 partialPattern: [],
+                startWithBlock: { color: "teal", position: { row: 3, col: 5 } },
                 targets: [
                     // Row 1: pink, yellow, pink, yellow, pink
                     { row: 1, col: 1, color: "pink" },
@@ -385,10 +386,11 @@
             {
                 id: 4,
                 title: "Level 4",
-                avatarStart: { row: 5, col: 1 },
+                avatarStart: { row: 1, col: 3 },
                 dock: { row: 3, col: 3 },
                 cyclicSpawn: ["pink", "blue", "yellow", "violet", "lime", "teal", "magenta"],
                 partialPattern: [],
+                startWithBlock: { color: "violet", position: { row: 1, col: 2 } },
                 targets: [
                     // Row 1: pink, yellow, pink, yellow, pink
                     { row: 1, col: 1, color: "pink" },
@@ -539,6 +541,24 @@
             spawnIndex = 0;
             lastSpawnedColor = null;
             lastMoveDirection = { dr: 0, dc: 0 };
+
+            // Check if level starts with a block attached to avatar
+            if (level.startWithBlock) {
+                dragging = {
+                    color: COLORS[level.startWithBlock.color],
+                    colorKey: level.startWithBlock.color,
+                    currentPos: level.startWithBlock.position
+                };
+                lastSpawnedColor = level.startWithBlock.color;
+
+                logEvent({
+                    type: "level_start_with_block",
+                    level: currentLevel + 1,
+                    blockColor: level.startWithBlock.color,
+                    blockPosition: level.startWithBlock.position,
+                    timestamp: Date.now()
+                });
+            }
 
             // Set up spawn sequence based on level type
             if (level.cyclicSpawn) {
