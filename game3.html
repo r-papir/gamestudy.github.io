@@ -440,6 +440,52 @@
             }
 
             renderGrid();
+
+            // Check if path is complete and auto-advance
+            checkAndAdvanceLevel();
+        }
+
+        // Check if path is complete and advance to next level
+        function checkAndAdvanceLevel() {
+            if (canReachGoal()) {
+                // Path is complete - wait 1 second then advance
+                setTimeout(() => {
+                    // Clear vehicle(s) from old position(s)
+                    for (let row = 0; row < 7; row++) {
+                        for (let col = 0; col < 7; col++) {
+                            if (gameState.grid[row][col] === 3) {
+                                gameState.grid[row][col] = 1; // Convert vehicle to track
+                            }
+                        }
+                    }
+
+                    // Move vehicle to goal
+                    gameState.vehiclePos = { ...gameState.goalPos };
+                    gameState.grid[gameState.vehiclePos.row][gameState.vehiclePos.col] = 3;
+
+                    // Clear selection so pathway shows uniformly on completion
+                    gameState.selectedChunkIndex = -1;
+
+                    renderGrid();
+
+                    // Win! Move to next level
+                    createRipple();
+
+                    const gridElement = document.getElementById('grid');
+                    gridElement.classList.add('fade-out');
+
+                    setTimeout(() => {
+                        currentLevelIndex++;
+                        if (currentLevelIndex < levels.length) {
+                            loadLevel(currentLevelIndex);
+                        } else {
+                            // Game complete - show restart button
+                            gridElement.classList.remove('fade-out');
+                            document.getElementById('restart-button').style.display = 'block';
+                        }
+                    }, 800);
+                }, 1000); // 1 second delay before transition
+            }
         }
 
         // Cycle to next chunk
@@ -510,49 +556,6 @@
 
             // All vehicles can reach the goal
             return true;
-        }
-
-        // Move vehicle
-        function moveVehicle() {
-            if (!canReachGoal()) {
-                return; // Path not complete
-            }
-
-            // Clear vehicle(s) from old position(s)
-            // For Level 4 with two vehicles, clear both; otherwise just clear the one
-            for (let row = 0; row < 7; row++) {
-                for (let col = 0; col < 7; col++) {
-                    if (gameState.grid[row][col] === 3) {
-                        gameState.grid[row][col] = 1; // Convert vehicle to track
-                    }
-                }
-            }
-
-            // Move vehicle to goal (both vehicles converge to same position in Level 4)
-            gameState.vehiclePos = { ...gameState.goalPos };
-            gameState.grid[gameState.vehiclePos.row][gameState.vehiclePos.col] = 3;
-
-            // Clear selection so pathway shows uniformly on completion
-            gameState.selectedChunkIndex = -1;
-
-            renderGrid();
-
-            // Win! Move to next level
-            createRipple();
-
-            const gridElement = document.getElementById('grid');
-            gridElement.classList.add('fade-out');
-
-            setTimeout(() => {
-                currentLevelIndex++;
-                if (currentLevelIndex < levels.length) {
-                    loadLevel(currentLevelIndex);
-                } else {
-                    // Game complete - show restart button
-                    gridElement.classList.remove('fade-out');
-                    document.getElementById('restart-button').style.display = 'block';
-                }
-            }, 800);
         }
 
         // Create ripple effect
@@ -647,9 +650,8 @@
                     e.preventDefault();
                     if (!isBKeyPressed) {
                         isBKeyPressed = true;
-                        renderGrid(); // Re-render to show flash effect
-                        logEvent('B', 'attempt_move_vehicle');
-                        moveVehicle();
+                        renderGrid(); // Re-render to remove selection color
+                        logEvent('B', 'visualize_board');
                     }
                     break;
                 case 'r':
