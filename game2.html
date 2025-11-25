@@ -585,8 +585,8 @@
                         cell.classList.add('dock');
                     }
 
-                    // Check if avatar is here
-                    const isAvatar = (avatar.row === row && avatar.col === col);
+                    // Check if avatar is here (but hide if level completed)
+                    const isAvatar = (avatar.row === row && avatar.col === col) && !levelCompleted;
 
                     // Check if dragged block is here
                     const isDragged = dragging && dragging.currentPos &&
