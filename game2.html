@@ -562,17 +562,64 @@
 
             // Avatar can now move over locked pieces (no blocking)
 
-            // Check if blocked by dragged piece (can't move into trailing block)
+            // Check if moving into dragged piece position - swap it to opposite side
             if (dragging && dragging.currentPos &&
                 dragging.currentPos.row === newRow &&
                 dragging.currentPos.col === newCol) {
+
+                // Calculate where the block will move to (opposite side of avatar)
+                const blockNewRow = newRow + dr;
+                const blockNewCol = newCol + dc;
+
+                // Check if the new block position is valid
+                if (blockNewRow < 1 || blockNewRow > 5 || blockNewCol < 1 || blockNewCol > 5) {
+                    // Can't swap - block would go out of bounds
+                    logEvent({
+                        type: "move_blocked",
+                        reason: "block_swap_out_of_bounds",
+                        attemptedPosition: { row: newRow, col: newCol },
+                        keyPressed: keyPressed,
+                        timestamp: Date.now()
+                    });
+                    return;
+                }
+
+                // Check if new block position is occupied by locked piece
+                if (grid[blockNewRow][blockNewCol].isLocked) {
+                    // Can't swap - block would overlap locked piece
+                    logEvent({
+                        type: "move_blocked",
+                        reason: "block_swap_blocked_by_locked",
+                        attemptedPosition: { row: newRow, col: newCol },
+                        keyPressed: keyPressed,
+                        timestamp: Date.now()
+                    });
+                    return;
+                }
+
+                // Swap is valid - move avatar and reposition block
+                lastAvatarPos = { row: avatar.row, col: avatar.col };
+                avatar.row = newRow;
+                avatar.col = newCol;
+                moveCount++;
+
+                // Update block position to opposite side
+                dragging.currentPos = { row: blockNewRow, col: blockNewCol };
+
                 logEvent({
-                    type: "move_blocked",
-                    reason: "dragged_piece",
-                    attemptedPosition: { row: newRow, col: newCol },
+                    type: "move_with_swap",
+                    from: lastAvatarPos,
+                    to: { row: newRow, col: newCol },
+                    blockSwappedTo: { row: blockNewRow, col: blockNewCol },
+                    moveNumber: moveCount,
                     keyPressed: keyPressed,
                     timestamp: Date.now()
                 });
+
+                // Check if block should lock at new position
+                checkLock();
+                renderBoard();
+                checkWinCondition();
                 return;
             }
 
