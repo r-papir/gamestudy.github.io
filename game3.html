@@ -141,6 +141,8 @@
     <button id="restart-button">Start Over</button>
     <button id="download-button">Download Data</button>
 
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <script src="audio-recorder.js"></script>
     <script>
         // Game state
         let levels = [];
@@ -723,6 +725,40 @@
         levels = [level1(), level2(), level3(), level4()];
         initGrid();
         loadLevel(0);
+
+        // Initialize audio recorder
+        AudioRecorder.init({
+            gamePrefix: 'puzzle-game3',
+            getGameState: function() {
+                return {
+                    level: currentLevelIndex + 1,
+                    vehiclePos: { ...gameState.vehiclePos },
+                    goalPos: { ...gameState.goalPos },
+                    selectedChunkIndex: gameState.selectedChunkIndex,
+                    chunks: gameState.chunks.map(chunk => chunk.map(cell => [...cell])),
+                    gameStateMatrix: generateGameStateMatrix(),
+                    isBKeyPressed: isBKeyPressed
+                };
+            },
+            screenToGrid: function(screenX, screenY) {
+                const grid = document.getElementById('grid');
+                const rect = grid.getBoundingClientRect();
+
+                // Check if point is within grid bounds
+                if (screenX < rect.left || screenX > rect.right ||
+                    screenY < rect.top || screenY > rect.bottom) {
+                    return null; // Off grid
+                }
+
+                // Convert to grid coordinates (0-6 for 7x7 grid)
+                const cellWidth = rect.width / 7;
+                const cellHeight = rect.height / 7;
+                const col = Math.floor((screenX - rect.left) / cellWidth);
+                const row = Math.floor((screenY - rect.top) / cellHeight);
+
+                return { x: Math.min(col, 6), y: Math.min(row, 6) };
+            }
+        });
     </script>
 </body>
 </html>

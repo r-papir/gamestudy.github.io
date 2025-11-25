@@ -165,6 +165,8 @@
     <button id="restart-button">Start Over</button>
     <button id="download-button">Download Data</button>
 
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <script src="audio-recorder.js"></script>
     <script>
         // Color definitions
         const COLORS = {
@@ -707,6 +709,41 @@
         // Start game
         initGrid();
         loadLevel(0);
+
+        // Initialize audio recorder
+        AudioRecorder.init({
+            gamePrefix: 'puzzle-game1',
+            getGameState: function() {
+                return {
+                    level: currentLevelIndex + 1,
+                    avatarPos: { ...gameState.avatarPos },
+                    avatarColor: gameState.avatarColor,
+                    targetColor: gameState.targetColor,
+                    centerPos: { ...gameState.centerPos },
+                    colorHistory: [...gameState.colorHistory],
+                    moveCount: gameState.moveCount,
+                    gameStateMatrix: generateGameStateMatrix()
+                };
+            },
+            screenToGrid: function(screenX, screenY) {
+                const grid = document.getElementById('grid');
+                const rect = grid.getBoundingClientRect();
+
+                // Check if point is within grid bounds
+                if (screenX < rect.left || screenX > rect.right ||
+                    screenY < rect.top || screenY > rect.bottom) {
+                    return null; // Off grid
+                }
+
+                // Convert to grid coordinates (0-5 for 6x6 grid)
+                const cellWidth = rect.width / 6;
+                const cellHeight = rect.height / 6;
+                const gridX = Math.floor((screenX - rect.left) / cellWidth);
+                const gridY = Math.floor((screenY - rect.top) / cellHeight);
+
+                return { x: Math.min(gridX, 5), y: Math.min(gridY, 5) };
+            }
+        });
     </script>
 </body>
 </html>

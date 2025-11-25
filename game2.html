@@ -247,6 +247,8 @@
         </div>
     </div>
 
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <script src="audio-recorder.js"></script>
     <script>
         // ============================
         // COLOR PALETTE
@@ -1033,6 +1035,61 @@
         // START GAME
         // ============================
         initGame();
+
+        // Initialize audio recorder
+        AudioRecorder.init({
+            gamePrefix: 'puzzle-game2',
+            getGameState: function() {
+                // Capture grid state
+                const gridState = [];
+                for (let row = 1; row <= 5; row++) {
+                    const rowData = [];
+                    for (let col = 1; col <= 5; col++) {
+                        const cell = grid[row][col];
+                        rowData.push({
+                            color: cell.colorKey || null,
+                            isLocked: cell.isLocked,
+                            isTarget: cell.isTarget,
+                            targetColor: cell.targetColor
+                        });
+                    }
+                    gridState.push(rowData);
+                }
+
+                return {
+                    level: currentLevel + 1,
+                    avatarPos: { row: avatar.row, col: avatar.col },
+                    avatarColor: avatar.color,
+                    dragging: dragging ? {
+                        colorKey: dragging.colorKey,
+                        currentPos: dragging.currentPos
+                    } : null,
+                    moveCount: moveCount,
+                    spawnIndex: spawnIndex,
+                    lastSpawnedColor: lastSpawnedColor,
+                    gridState: gridState,
+                    levelCompleted: levelCompleted
+                };
+            },
+            screenToGrid: function(screenX, screenY) {
+                const gridEl = document.getElementById('grid');
+                const rect = gridEl.getBoundingClientRect();
+
+                // Check if point is within grid bounds
+                if (screenX < rect.left || screenX > rect.right ||
+                    screenY < rect.top || screenY > rect.bottom) {
+                    return null; // Off grid
+                }
+
+                // Convert to grid coordinates (1-5 for 5x5 grid, 1-indexed to match game)
+                const cellWidth = rect.width / 5;
+                const cellHeight = rect.height / 5;
+                const col = Math.floor((screenX - rect.left) / cellWidth) + 1;
+                const row = Math.floor((screenY - rect.top) / cellHeight) + 1;
+
+                return { x: Math.min(col, 5), y: Math.min(row, 5) };
+            }
+        });
     </script>
 </body>
 </html>
