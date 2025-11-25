@@ -423,10 +423,15 @@
                 }
             }
 
-            // Clear old positions
+            // Clear old positions (but preserve goal if chunk was on it)
             for (const [r, c] of chunk) {
                 if (gameState.grid[r][c] === 1) {
-                    gameState.grid[r][c] = 0;
+                    // Check if this was originally the goal position
+                    if (r === gameState.goalPos.row && c === gameState.goalPos.col) {
+                        gameState.grid[r][c] = 4; // Restore goal
+                    } else {
+                        gameState.grid[r][c] = 0;
+                    }
                 }
             }
 
@@ -497,86 +502,66 @@
         }
 
         // Pathfinding: BFS to check if vehicle(s) can reach goal
-        // AND all movable pieces are part of the connected path
         function canReachGoal() {
             const goal = gameState.goalPos;
 
-            // Find all vehicle positions and all movable track positions
+            // Find all vehicle positions in the grid
             const vehiclePositions = [];
-            const allTrackCells = new Set(); // All cells that are track (1), fixed (2), vehicle (3), or goal (4)
-
             for (let row = 0; row < 7; row++) {
                 for (let col = 0; col < 7; col++) {
-                    const gridValue = gameState.grid[row][col];
-                    if (gridValue === 3) {
+                    if (gameState.grid[row][col] === 3) {
                         vehiclePositions.push([row, col]);
-                        allTrackCells.add(`${row},${col}`);
-                    } else if (gridValue === 1 || gridValue === 2 || gridValue === 4) {
-                        allTrackCells.add(`${row},${col}`);
                     }
                 }
             }
 
-            // Do a single BFS from the first vehicle to find all connected cells
-            if (vehiclePositions.length === 0) return false;
+            // Check if EACH vehicle can reach the goal
+            for (const [startRow, startCol] of vehiclePositions) {
+                const queue = [[startRow, startCol]];
+                const visited = new Set();
+                visited.add(`${startRow},${startCol}`);
 
-            const [startRow, startCol] = vehiclePositions[0];
-            const queue = [[startRow, startCol]];
-            const connectedCells = new Set();
-            connectedCells.add(`${startRow},${startCol}`);
+                let canReach = false;
 
-            let goalReached = false;
+                while (queue.length > 0) {
+                    const [row, col] = queue.shift();
 
-            while (queue.length > 0) {
-                const [row, col] = queue.shift();
+                    // Check if we reached the goal
+                    if (row === goal.row && col === goal.col) {
+                        canReach = true;
+                        break;
+                    }
 
-                // Check if we reached the goal
-                if (row === goal.row && col === goal.col) {
-                    goalReached = true;
-                }
+                    // Check all 4 adjacent cells
+                    const neighbors = [
+                        [row - 1, col],
+                        [row + 1, col],
+                        [row, col - 1],
+                        [row, col + 1]
+                    ];
 
-                // Check all 4 adjacent cells
-                const neighbors = [
-                    [row - 1, col],
-                    [row + 1, col],
-                    [row, col - 1],
-                    [row, col + 1]
-                ];
+                    for (const [nRow, nCol] of neighbors) {
+                        if (nRow < 0 || nRow >= 7 || nCol < 0 || nCol >= 7) continue;
 
-                for (const [nRow, nCol] of neighbors) {
-                    if (nRow < 0 || nRow >= 7 || nCol < 0 || nCol >= 7) continue;
+                        const key = `${nRow},${nCol}`;
+                        if (visited.has(key)) continue;
 
-                    const key = `${nRow},${nCol}`;
-                    if (connectedCells.has(key)) continue;
-
-                    const gridValue = gameState.grid[nRow][nCol];
-                    // Can move on track (1), fixed track (2), vehicle (3), or goal (4)
-                    if (gridValue === 1 || gridValue === 2 || gridValue === 3 || gridValue === 4) {
-                        connectedCells.add(key);
-                        queue.push([nRow, nCol]);
+                        const gridValue = gameState.grid[nRow][nCol];
+                        // Can move on track (1), fixed track (2), vehicle (3), or goal (4)
+                        if (gridValue === 1 || gridValue === 2 || gridValue === 3 || gridValue === 4) {
+                            visited.add(key);
+                            queue.push([nRow, nCol]);
+                        }
                     }
                 }
-            }
 
-            // Must reach the goal
-            if (!goalReached) {
-                return false;
-            }
-
-            // ALL track cells must be connected (no leftover pieces)
-            for (const cell of allTrackCells) {
-                if (!connectedCells.has(cell)) {
-                    return false; // There's a piece not connected to the path
-                }
-            }
-
-            // For levels with multiple vehicles, check they're all connected
-            for (const [vRow, vCol] of vehiclePositions) {
-                if (!connectedCells.has(`${vRow},${vCol}`)) {
+                // If ANY vehicle cannot reach the goal, return false
+                if (!canReach) {
                     return false;
                 }
             }
 
+            // All vehicles can reach the goal
             return true;
         }
 
