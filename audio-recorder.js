@@ -385,7 +385,24 @@ const AudioRecorder = (function() {
         };
 
         // Create JSON content with pretty formatting
-        const jsonBlob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        // Custom formatting to keep gameStateBefore rows on single lines
+        let jsonString = JSON.stringify(exportData, null, 2);
+        // Fix gameStateBefore arrays to be compact rows
+        jsonString = jsonString.replace(/"gameStateBefore": \[\s*\[[\s\S]*?\]\s*\]/g, (match) => {
+            // Parse the array from the match
+            const arrayMatch = match.match(/"gameStateBefore": (\[[\s\S]*?\])\s*$/);
+            if (arrayMatch) {
+                try {
+                    const arr = JSON.parse(arrayMatch[1]);
+                    if (Array.isArray(arr) && Array.isArray(arr[0])) {
+                        const rows = arr.map(row => JSON.stringify(row));
+                        return `"gameStateBefore": [\n        ${rows.join(',\n        ')}\n      ]`;
+                    }
+                } catch (e) {}
+            }
+            return match;
+        });
+        const jsonBlob = new Blob([jsonString], { type: 'application/json' });
         const jsonUrl = URL.createObjectURL(jsonBlob);
         const jsonLink = document.createElement('a');
         jsonLink.href = jsonUrl;
