@@ -349,30 +349,47 @@ const AudioRecorder = (function() {
 
     // Export recording
     function exportRecording() {
-        if (state.gameFrames.length === 0 && state.gazeData.length === 0) {
+        if (state.keystrokes.length === 0 && state.gazeData.length === 0) {
             alert('No recording data to export');
             return;
         }
 
         const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
 
-        // Create combined export object with game frames and gaze data
+        // Create export object matching the track-puzzle-session format
         const exportData = {
-            session: {
-                gameId: state.gameId,
-                startTime: new Date(state.startTime).toISOString(),
-                duration: Date.now() - state.startTime
-            },
-            frames: state.gameFrames,
-            gaze: state.gazeData  // Array of [x, y, timestamp] tuples
+            sessionStart: new Date(state.startTime).toISOString(),
+            sessionEnd: new Date().toISOString(),
+            gameId: state.gameId,
+            events: state.keystrokes.map(ks => ({
+                timestamp: new Date(state.startTime + ks.timestamp).toISOString(),
+                level: ks.gameState.level || 1,
+                key: ks.key,
+                action: ks.action,
+                gameStateBefore: ks.gameState.gameStateMatrix || null,
+                selectedChunk: ks.gameState.selectedChunkIndex !== undefined ? ks.gameState.selectedChunkIndex : null,
+                // Include additional game state info
+                vehiclePos: ks.gameState.vehiclePos || null,
+                goalPos: ks.gameState.goalPos || null
+            })),
+            transcription: state.transcription.map(t => ({
+                timestamp: new Date(state.startTime + t.timestamp).toISOString(),
+                text: t.text,
+                confidence: t.confidence
+            })),
+            gaze: state.gazeData.map(g => ({
+                x: g[0],
+                y: g[1],
+                timestamp: new Date(state.startTime + g[2]).toISOString()
+            }))
         };
 
-        // Create JSON content (single file with all data)
-        const jsonBlob = new Blob([JSON.stringify(exportData)], { type: 'application/json' });
+        // Create JSON content with pretty formatting
+        const jsonBlob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const jsonUrl = URL.createObjectURL(jsonBlob);
         const jsonLink = document.createElement('a');
         jsonLink.href = jsonUrl;
-        jsonLink.download = `${config.gamePrefix}-${state.gameId}-${timestamp}.json`;
+        jsonLink.download = `${config.gamePrefix}-session-${timestamp}.json`;
         document.body.appendChild(jsonLink);
         jsonLink.click();
         document.body.removeChild(jsonLink);
@@ -384,7 +401,7 @@ const AudioRecorder = (function() {
             const audioUrl = URL.createObjectURL(audioBlob);
             const audioLink = document.createElement('a');
             audioLink.href = audioUrl;
-            audioLink.download = `${config.gamePrefix}-audio-${state.gameId}-${timestamp}.webm`;
+            audioLink.download = `${config.gamePrefix}-audio-${timestamp}.webm`;
             document.body.appendChild(audioLink);
             audioLink.click();
             document.body.removeChild(audioLink);
@@ -393,7 +410,8 @@ const AudioRecorder = (function() {
 
         const audioMsg = state.audioChunks.length > 0 ? '\n- WebM: audio recording' : '';
         const gazeMsg = state.gazeData.length > 0 ? `\n- ${state.gazeData.length} gaze points` : '';
-        alert(`Exported ${state.gameFrames.length} game frames!${gazeMsg}\n\nFiles:\n- JSON: game data with gaze${audioMsg}`);
+        const transcriptMsg = state.transcription.length > 0 ? `\n- ${state.transcription.length} transcriptions` : '';
+        alert(`Exported ${state.keystrokes.length} events!${transcriptMsg}${gazeMsg}\n\nFiles:\n- JSON: session data${audioMsg}`);
     }
 
     // Create and inject the recording UI
